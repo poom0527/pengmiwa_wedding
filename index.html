@@ -58,15 +58,16 @@
     --mb-thanks-words-pad: 24px;
 
     /* ==== PCの EN / JP トグルを変数で調整 ==== */
-  /* お好みで数値だけ変えれば反映されます */
-  --pc-lang-right: 30px;          /* 右からの距離 */
-  --pc-lang-bottom: 40px;         /* 下からの距離 */
-  --pc-lang-gap: 20px;            /* EN と JP の間隔 */
-  --pc-lang-font-size: 28px;      /* 共通フォントサイズ */
+ --pc-lang-right: 30px;
+  --pc-lang-bottom: 40px;
+  --pc-lang-gap: 20px;
 
-  /* 片方だけサイズ変えたい場合は↓に値を入れる（未指定なら上の共通サイズを使用） */
+  /* ▼ここを 20px に（以前より大きく見えるのを防ぐ） */
+  --pc-lang-font-size: 20px;
   --pc-lang-font-size-jp: var(--pc-lang-font-size);
   --pc-lang-font-size-en: var(--pc-lang-font-size);
+
+  --pc-lang-direction: column; /* row にすると横並び */
 
   /* 横並びにしたい場合は row に変更（既定は column=縦並び） */
   --pc-lang-direction: column;
@@ -742,16 +743,11 @@
 /* ========= Language + responsive image switcher ========= */
 (() => {
   const mq = window.matchMedia('(max-width: 720px)');
-const LS_KEY = 'wedding.lang';
 
-/* --- 初期言語：URL > localStorage > JP --- */
-const urlLang = new URLSearchParams(location.search).get('lang') || (location.hash === '#en' ? 'en' : null);
-const saved   = localStorage.getItem(LS_KEY);
-let currentLang = (urlLang || saved || 'ja') === 'en' ? 'en' : 'ja';
-
-/* 任意：URLで言語が指定されたときは保存して次回以降も同じ言語で開く */
-if (urlLang) { localStorage.setItem(LS_KEY, currentLang); }
-
+  // ★ 初期言語は URL（?lang=en または #en）だけを参照。なければ常に 'ja'
+  const paramLang = new URLSearchParams(location.search).get('lang');
+  const hashLang  = (location.hash || '').toLowerCase() === '#en' ? 'en' : null;
+  let currentLang = (paramLang === 'en' || hashLang === 'en') ? 'en' : 'ja';
 
   const $  = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -808,14 +804,14 @@ if (urlLang) { localStorage.setItem(LS_KEY, currentLang); }
     });
 
     // プレースホルダ
-    const ao = document.getElementById('allergyOther');
+    const ao  = document.getElementById('allergyOther');
     if(ao){ ao.placeholder = currentLang==='en'
       ? 'If you have other requests, please let us know.'
       : 'その他　特に気になる点がございましたら下記にご記入ください'; }
     const msg = document.getElementById('messageBox');
     if (msg) { msg.placeholder = (currentLang === 'en') ? 'for Peng and Miwa...:)' : '私たちに聞きたい質問があればぜひ！'; }
 
-    // Mapリンク文言（最初のひとつ）
+    // Mapリンク文言
     const mapLink = document.querySelector('.map-link a');
     if(mapLink){ mapLink.textContent = currentLang==='en' ? 'Open Google Maps' : 'Google Mapを開く'; }
 
@@ -826,7 +822,6 @@ if (urlLang) { localStorage.setItem(LS_KEY, currentLang); }
 
   function setLang(lang){
     currentLang = (lang==='en' ? 'en' : 'ja');
-    localStorage.setItem(LS_KEY, currentLang);
     applyLangButtons();
     applyLang();
   }
@@ -834,8 +829,8 @@ if (urlLang) { localStorage.setItem(LS_KEY, currentLang); }
   window.addEventListener('DOMContentLoaded', () => {
     applyLangButtons();
     applyLang();
-    $('#btnJP')?.addEventListener('click', ()=> setLang('ja'));
-    $('#btnEN')?.addEventListener('click', ()=> setLang('en'));
+    document.getElementById('btnJP')?.addEventListener('click', ()=> setLang('ja'));
+    document.getElementById('btnEN')?.addEventListener('click', ()=> setLang('en'));
     mq.addEventListener?.('change', applyLang);
   });
 })();
