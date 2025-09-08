@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>PENG MIWA WEDDING</title>
+
+<style>
+  :root{
+    --bg:#f5f7eb;
+    --ink:#e47a21;
+
+    --maxw:1120px;
+    --gutter-desktop:50px;
+
+    /* Intro logo timing */
+    --logo-in: 1s;
+    --logo-hold: 1.6s;
+    --logo-out: 0.9s;
+
+    --words-in: 3.0s;
+    --words-stagger: .35s;
+    --words-shift:.22;
+
+    /* section gaps (desktop defaults) */
+    --gap-hero-message: 400px;
+    --gap-message-date: 400px;
+    --gap-date-access: 400px;
+    --gap-access-allergy: 400px;
+    --gap-allergy-barefoot: 400px;
+    --gap-barefoot-rsvp: 400px;
+
+    /* RSVP image → form gaps */
+    --gap-rsvp-img-form-pc: 56px;
+    --gap-rsvp-img-form-sp: 32px;
+
+    /* THANK YOU overlay（PC配置用） */
+    --thanks-text-maxw: 570px;
+    --lastname-maxw:    400px;
+    --line-gap:         14px;
+    --thanks-words-offset-y: -270px;
+    --lastname-offset-y:     445px;
+    --thanks-in: var(--words-in);
+    --thanks-stagger: var(--words-stagger);
+
+    /* Mobile spacing */
+    --mb-hero-words-pad: 24px;
+    --mb-section-side-pad: 40px;
+    --mb-section-img-maxw: 560px;
+    --mb-section-gap: 140px;
+
+    /* Mobile THANK YOU offsets */
+    --mb-thanks-words-offset-y: 80px;
+    --mb-thanks-img-offset-y: 30px;
+    --mb-thanks-lastname-offset-y: 30px;
+    --mb-thanks-words-pad: 24px;
+
+    /* Lang toggle (PC) */
+    --pc-lang-right: 30px;
+    --pc-lang-bottom: 40px;
+    --pc-lang-gap: 20px;
+    --pc-lang-font-size-jp: 20px;
+    --pc-lang-font-size-en: 20px;
+    --pc-lang-direction: column;
+
+    /* Attend (PC) */
+    --attend-gap-pc: 160px;
+    --attend-font-pc: 24px;
+    --attend-radio-scale-pc: 1.2;
+
+    /* THANKS（PC） */
+    --pc-thanks-side-pad: 20px;
+    --pc-thanks-words-mt: 100px;
+    --pc-thanks-img-mt:   70px;
+    --pc-thanks-lastname-mt: 70px;
+    --pc-thanks-lastname-mb: 32px;
+
+    /* Attend (Mobile) */
+    --mb-attend-gap: 18px;
+    --mb-attend-font: 16px;
+
+    /* Lang toggle (Mobile) */
+    --mb-lang-right: 20px;
+    --mb-lang-left:  auto;
+    --mb-lang-bottom: 20px;
+    --mb-lang-gap:     12px;
+    --mb-lang-font:   16px;
+  }
+
+  *{ box-sizing:border-box }
+  html{ scroll-behavior:smooth }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:
+      "Hiragino Mincho ProN",
+      "Hiragino Mincho Pro",
+      "Yu Mincho",
+      "YuMincho",
+      "Noto Serif JP",
+      "MS PMincho",
+      serif;
+    line-height:1.7; overflow-x:hidden;
+  }
+  input, textarea, button, select { font: inherit; }
+
+  /* Intro */
+  .intro{
+    position:fixed; inset:0; z-index:200; background:#fff; display:grid; place-items:center;
+    opacity:1; transition:opacity var(--logo-out) ease;
+  }
+  .intro.hidden{ opacity:0; pointer-events:none; }
+  .intro-logo{
+    width:clamp(84px, 12vw, 140px); height:auto; opacity:0; transform:scale(.96);
+    animation: logoIntro calc(var(--logo-in) + var(--logo-hold) + var(--logo-out)) ease forwards;
+  }
+  @keyframes logoIntro{
+    0%{opacity:0; transform:scale(.96)}
+    30%{opacity:1; transform:scale(1)}
+    70%{opacity:1; transform:scale(1)}
+    100%{opacity:0; transform:scale(1)}
+  }
+
+  /* HERO */
+  .hero{ position:relative; z-index:10; margin:0; padding:0; min-height:70vh; opacity:0; transform:translateY(8px);
+    transition:opacity 1.1s ease, transform 1.1s ease; overflow:hidden; width:100vw; margin-left:calc(50% - 50vw); }
+  .hero.show{ opacity:1; transform:none; }
+  .hero-img{ display:block; width:100%; max-width:none; height:auto; }
+  @media (min-width: 769px){
+    .hero{ width:calc(100vw + 2px); margin-left:calc(50% - 50vw - 1px); }
+    @supports (width: 100dvw){
+      .hero{ width:calc(100dvw + 2px); margin-left:calc(50% - 50dvw - 1px); }
+    }
+  }
+
+  .words-wrap{ position:absolute; inset:0 0 auto 0; display:flex; justify-content:center; pointer-events:none; opacity:0;
+    transform:translateY(8px); transition:opacity .8s ease, transform .8s ease; width:100%; }
+  .words-wrap.show{ opacity:1; transform:none; }
+  .words-inner{
+    width:100%; max-width:none; padding-inline:5vw; transform:translateY(var(--words-ty,0px)); will-change:transform;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .word{ display:block; width:100%; height:auto; opacity:0; transform:translateY(10px); }
+  .words-wrap.show .word{ animation: wordFade var(--words-in) ease forwards; }
+  .words-wrap.show .word:nth-child(1){ animation-delay: calc(var(--words-stagger) * 0); }
+  .words-wrap.show .word:nth-child(2){ animation-delay: calc(var(--words-stagger) * 1); }
+  .words-wrap.show .word:nth-child(3){ animation-delay: calc(var(--words-stagger) * 2); }
+  @keyframes wordFade{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+
+  /* Layout */
+  section{ padding:0 }
+  .block{ max-width:var(--maxw); margin:0 auto; padding-inline:var(--gutter-desktop) }
+  .png{ display:block; width:100%; height:auto }
+  .gap{ height:var(--h, 60px) }
+
+  /* Map */
+  .map-embed{
+    margin:40px auto 0; max-width:980px; width:100%;
+    border-radius:16px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.1);
+  }
+  .map-embed iframe{ display:block; width:100%; height: clamp(420px, 55vh, 640px); border:0; }
+  .map-link{ text-align:center; margin-top:12px; }
+  .map-link a{ font-weight:800; letter-spacing:.02em; text-underline-offset:3px; color:var(--ink); text-decoration-color: currentColor; }
+  @media (min-width:721px){ .map-link a{ font-size:22px; line-height:1.5; } }
+  @media (max-width:720px){
+    .map-link a{
+    font-size: 10px;       /* ← サイズ調整 */
+    line-height: 1.6;      /* ← 行間調整 */
+    display: inline-block;
+    padding: 8px 12px;     /* ← 上下左右に余白 */
+    border-radius: 6px;    /* ← 角丸にしたい場合 */
+    text-decoration: line; /* ← 下線を消す */
+    .map-embed{ margin:20px auto 0; max-width:92vw; }
+    .map-embed iframe{ height: clamp(320px, 48vh, 460px); }
+  }
+
+  /* RSVP form */
+  .rsvp{ position:relative; z-index:1 }
+  .rsvp-form{ width:100%; max-width:none; margin:0; display:grid; gap:18px; }
+  .form-group{ display:flex; flex-direction:column; gap:6px }
+  .label{ font-weight:700; color:#db7929; line-height:1.3; font-size:18px }
+  .input, .textarea{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.16); background:#fff; font-size:18px; outline:none; }
+  .textarea{ min-height:120px; resize:vertical }
+  .boxed{ border:1px solid rgba(0,0,0,.12); border-radius:14px; padding:14px; background:#fff; }
+  .checks{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px 14px; margin:6px 0 8px }
+  .check{ display:flex; align-items:center; gap:8px; font-size:18px }
+  input[type="checkbox"], input[type="radio"]{ accent-color:var(--ink) }
+  .btns{ display:flex; justify-content:center; margin-top:8px; margin-bottom:200px; }
+  .btn{ appearance:none; border:none; border-radius:999px; background:var(--ink); color:#fff; font-weight:800; box-shadow:0 6px 16px rgba(0,0,0,.12);
+    cursor:pointer; transition:transform .05s ease, opacity .2s ease; padding: 15px 35px; font-size: 20px; }
+  .btn:hover{ opacity:.9 } .btn:active{ transform:translateY(1px) }
+
+  /* ====== show/hide helpers ====== */
+  .only-pc-jp, .only-mb-jp, .only-mb-en{ display:none; }
+  @media (min-width:721px){
+    html[lang="ja"] .only-pc-jp{ display:block; }
+  }
+  @media (max-width:720px){
+    html[lang="ja"] .only-mb-jp{ display:block; }
+    html[lang="en"] .only-mb-en{ display:block; }
+    html[lang="ja"] #mapImageMbEn{ display:none !important; }
+    html[lang="en"] #mapImageMbJp{ display:none !important; }
+  }
+
+  /* THANK YOU overlay base (必須) */
+  #thanks{
+    position:fixed; inset:0; z-index:9999;
+    display:none; opacity:0; background:var(--bg);
+    align-items:flex-start; justify-content:center; overflow:auto;
+    transition:opacity .5s ease;
+  }
+  #thanks.show{ display:flex; opacity:1; }
+  .thanks-inner{ width:100%; max-width:none; }
+  .thanks-media{ position:relative; }
+  .thanks-img{ display:block; width:100%; max-width:1200px; margin:40px auto 0; border-radius:0 !important; box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+  .thanks-words{
+    position:absolute; left:50%; top:50%;
+    transform: translate(-50%,-50%) translateY(var(--thanks-words-offset-y));
+    display:flex; flex-direction:column; align-items:center; gap: var(--line-gap);
+    width:100%; pointer-events:none; z-index:2;
+  }
+  .thanks-words .tline{ display:block; width:100%; max-width: var(--thanks-text-maxw); height:auto; opacity:0; transform: translateY(10px); }
+  .lastname{ position:absolute; left:50%; top:50%; width:100%; max-width: var(--lastname-maxw); height:auto; margin:0 auto; pointer-events:none; z-index:3; opacity:0;
+    transform: translate(-50%,-50%) translateY(var(--lastname-offset-y)) translateY(10px); }
+
+  /* アニメ */
+  #thanks.show .thanks-words .tline{ animation: wordFadeTY var(--thanks-in) ease forwards; }
+  #thanks.show .thanks-words .tline:nth-child(1){ animation-delay: calc(var(--thanks-stagger) * 0); }
+  #thanks.show .thanks-words .tline:nth-child(2){ animation-delay: calc(var(--thanks-stagger) * 1); }
+  #thanks.show .thanks-words .tline:nth-child(3){ animation-delay: calc(var(--thanks-stagger) * 2); }
+  #thanks.show .lastname{ animation: wordFadeLast var(--thanks-in) ease forwards; animation-delay: calc(var(--thanks-stagger) * 3); }
+  @keyframes wordFadeTY{ 0%{ opacity:0; transform: translateY(10px); } 100%{ opacity:1; transform: translateY(0); } }
+  @keyframes wordFadeLast{ 0%{ opacity:0; transform: translate(-50%,-50%) translateY(var(--lastname-offset-y)) translateY(10px); } 100%{ opacity:1; transform: translate(-50%,-50%) translateY(var(--lastname-offset-y)) translateY(0); } }
+
+  /* THANK YOU（モバイル） */
+  @media (max-width:720px){
+    .words-inner{ padding-inline: var(--mb-hero-words-pad); }
+
+    .block{ padding-inline: var(--mb-section-side-pad); max-width:100%; }
+    .png{ max-width: var(--mb-section-img-maxw); margin-inline:auto; }
+
+    #thanks .thanks-media{ display:flex; flex-direction:column; align-items:center; width:100%; }
+    #thanks .thanks-words{
+      position:static; transform:none; order:0; width:100%;
+      max-width:var(--thanks-text-maxw); text-align:center;
+      padding-inline: var(--mb-thanks-words-pad);
+      margin-top: var(--mb-thanks-words-offset-y);
+    }
+    #thanks .thanks-words .tline{ opacity:0; transform: translateY(10px); }
+    #thanks .thanks-img{
+      order:1; width:100%; max-width:100%;
+      margin: var(--mb-thanks-img-offset-y) auto 0 !important;
+      border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.12); opacity:1;
+    }
+    #thanks .lastname{
+      position:static; order:2; width:100%;
+      max-width: var(--lastname-maxw);
+      margin: var(--mb-thanks-lastname-offset-y) auto 24px;
+      opacity:0; transform: translateY(10px); pointer-events:none;
+    }
+
+    #thanks.show .thanks-words .tline{ animation: wordFadeTY var(--thanks-in) ease forwards; }
+    #thanks.show .thanks-words .tline:nth-child(1){ animation-delay: calc(var(--thanks-stagger) * 0 + .10s); }
+    #thanks.show .thanks-words .tline:nth-child(2){ animation-delay: calc(var(--thanks-stagger) * 1 + .10s); }
+    #thanks.show .thanks-words .tline:nth-child(3){ animation-delay: calc(var(--thanks-stagger) * 2 + .10s); }
+    #thanks.show .lastname{ animation: thanksFadeUp .9s ease forwards; animation-delay: calc(var(--thanks-stagger) * 3 + .10s); }
+    @keyframes thanksFadeUp{
+      from{opacity:0; transform:translateY(10px);}
+      to  {opacity:1; transform:none;}
+    }
+  }
+
+  /* Fade-up 共通 */
+  .fadeup{ opacity:0; transform:translateY(30px); transition: opacity 1s ease, transform 1s ease; }
+  .fadeup.show{ opacity:1; transform:translateY(0); }
+
+  /* 言語トグル */
+  .lang-toggle{
+    opacity:0; pointer-events:none;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .lang-toggle.show{ opacity:1; pointer-events:auto; }
+  @media (min-width:721px){
+    .lang-toggle{
+      position: fixed !important;
+      right: var(--pc-lang-right) !important;
+      bottom: var(--pc-lang-bottom) !important;
+      display: flex !important;
+      flex-direction: var(--pc-lang-direction) !important;
+      gap: var(--pc-lang-gap) !important;
+      z-index: 1000;
+    }
+    #btnJP{ font-size: var(--pc-lang-font-size-jp) !important; line-height:1; }
+    #btnEN{ font-size: var(--pc-lang-font-size-en) !important; line-height:1; }
+  }
+  @media (max-width:720px){
+    .hero .lang-toggle{
+      position:absolute !important;
+      right: var(--mb-lang-right) !important;
+      left:  var(--mb-lang-left)  !important;
+      bottom: var(--mb-lang-bottom) !important;
+      display:flex !important; flex-direction:column !important; gap:var(--mb-lang-gap) !important;
+    }
+    .lang-toggle button{ font-size: var(--mb-lang-font) !important; line-height:1; }
+  }
+  .lang-toggle button{
+    appearance:none; border:none; background:none;
+    font-weight:800; color:#999; cursor:pointer; padding:0;
+  }
+  .lang-toggle button.on{ color:var(--ink); }
+
+  /* RSVP: 画像→フォームの間隔 */
+  @media (min-width:721px){ #rsvp > .block + .block{ margin-top: var(--gap-rsvp-img-form-pc); } }
+  @media (max-width:720px){ #rsvp > .block + .block{ margin-top: var(--gap-rsvp-img-form-sp); } }
+
+  /* モバイルのセクション間隔を一括反映 */
+  @media (max-width:720px){
+    :root{
+      --gap-hero-message:     var(--mb-section-gap);
+      --gap-message-date:     var(--mb-section-gap);
+      --gap-date-access:      var(--mb-section-gap);
+      --gap-access-allergy:   var(--mb-section-gap);
+      --gap-allergy-barefoot: var(--mb-section-gap);
+      --gap-barefoot-rsvp:    var(--mb-section-gap);
+    }
+    html[lang="ja"] .only-mb-jp + .only-mb-jp{ margin-top: var(--mb-section-gap) !important; }
+  }
+
+  /* 英語フォームの微調整（折返し） */
+  @media (max-width:720px){
+    #rsvp .checks{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+      column-gap:12px; row-gap:10px;
+    }
+    #rsvp .check{ align-items:flex-start; gap:8px; }
+    #rsvp .check input{ margin-top:3px; flex:0 0 auto; }
+    #rsvp .check span{ line-height:1.3; word-break:break-word; overflow-wrap:anywhere; }
+    html[lang="en"] #rsvp .check span{ font-size:13px; }
+  }
+
+  /* 出席確認の並び */
+  .form-group.attend-inline{
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; font-size:16px;
+  }
+  .form-group.attend-inline .check{ font-size: inherit; font-weight:700; }
+  @media (min-width:721px){
+    .form-group.attend-inline{
+      flex-direction: row; justify-content:center; align-items:center;
+      gap: var(--attend-gap-pc); font-size: var(--attend-font-pc);
+    }
+    .form-group.attend-inline input[type="radio"]{ transform: scale(var(--attend-radio-scale-pc)); transform-origin:center; }
+  }
+
+  /* THANK YOU（PC をモバイル風 縦並びに） */
+  @media (min-width:721px){
+    #thanks .thanks-media{ display:flex; flex-direction:column; align-items:center; width:100%; }
+    #thanks .thanks-words{
+      position:static !important; transform:none !important; order:0; width:100%;
+      max-width: var(--thanks-text-maxw); text-align:center; padding-inline: var(--pc-thanks-side-pad);
+      margin-top: var(--pc-thanks-words-mt); gap: var(--line-gap);
+    }
+    #thanks .thanks-img{
+      order:1; width:100%; max-width:1200px; margin: var(--pc-thanks-img-mt) auto 0 !important;
+      box-shadow:0 10px 30px rgba(0,0,0,.15); border-radius:0 !important;
+    }
+    #thanks .lastname{
+      position:static !important; transform:none !important; order:2; opacity:0;
+      width:100%; max-width: var(--lastname-maxw);
+      margin: var(--pc-thanks-lastname-mt) auto var(--pc-thanks-lastname-mb); pointer-events:none;
+    }
+    #thanks.show .lastname{ animation: thanksFadeUpPc .9s ease forwards; animation-delay: calc(var(--thanks-stagger) * 3); }
+    @keyframes thanksFadeUpPc{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  }
+
+  /* hero2（thanks-img）の角丸は常に無効化 */
+  .thanks-img{ border-radius: 0 !important; }
+
+  /* PCの英語専用セクション */
+  .only-pc-en{ display:none; }
+  @media (min-width:721px){
+    html[lang="en"] .only-pc-en{ display:block; }
+  }
+
+  /* モバイル：出席確認の左揃え */
+@media (max-width:720px){
+  #rsvp .form-group.attend-inline{
+    align-items: flex-start;   /* ← 中央→左 */
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+  #rsvp .form-group.attend-inline .check{
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width:720px){
+  .words-wrap .words-inner{
+    margin-top: 20px;   /* ← ここで下げたい分だけ調整 */
+  }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- Intro -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <img class="intro-logo" src="images/logo.png" alt="MIWA & PENG">
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="hero" aria-label="Hero">
+    <img id="heroImg" class="hero-img i18n"
+         data-jp="images/hero.png"
+         data-jp-mb="images/hero_mb.png"
+         data-en="images/hero.png"
+         data-en-mb="images/hero_mb.png"
+         alt="Header Photo" decoding="async" loading="eager" />
+
+    <div class="words-wrap" id="wordsWrap">
+      <div class="words-inner" id="wordsInner">
+        <img class="word swap-mb" src="images/words_tw.png" data-mb="images/words_tw_mb.png" alt="我要和 MIWA 結婚了" loading="eager">
+        <img class="word swap-mb" src="images/words_jp.png" data-mb="images/words_jp_mb.png" alt="私はPENGと結婚します" loading="eager">
+        <img class="word swap-mb" src="images/words_en.png" data-mb="images/words_en_mb.png" alt="WE ARE GETTING MARRIED" loading="eager">
+      </div>
+    </div>
+
+    <!-- 言語トグル -->
+    <nav class="lang-toggle" id="langToggle" aria-label="Language">
+      <button type="button" id="btnJP" class="on"  lang="ja" aria-pressed="true">JP</button>
+      <button type="button" id="btnEN" class=""    lang="en" aria-pressed="false">EN</button>
+    </nav>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-hero-message)"></div>
+
+  <!-- Message -->
+  <section id="message" class="fadeup">
+    <div class="block">
+      <img class="png i18n"
+           data-jp="images/message.png" data-jp-mb="images/message_mb.png"
+           data-en="images/message_en.png" data-en-mb="images/message_en_mb.png"
+           alt="Message / ご挨拶" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-message-date)"></div>
+
+  <!-- Date -->
+  <section id="date" class="fadeup">
+    <div class="block">
+      <img class="png i18n"
+           data-jp="images/date.png" data-jp-mb="images/date_mb.png"
+           data-en="images/date_en.png" data-en-mb="images/date_en_mb.png"
+           alt="Date / 日時" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-date-access)"></div>
+
+  <!-- PC: English venue image (EN only) -->
+  <section id="venueImagePcEn" class="fadeup only-pc-en">
+    <div class="block">
+      <img class="png" src="images/venue_en.png" alt="Venue (PC EN)" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <!-- JP: venue → map（モバイル） -->
+  <section id="venueImageMbJp" class="fadeup only-mb-jp">
+    <div class="block">
+      <img class="png" src="images/venue_mb.png" alt="会場（モバイルJP）" loading="lazy" decoding="async">
+    </div>
+  </section>
+  <section id="mapImageMbJp" class="fadeup only-mb-jp">
+    <div class="block">
+      <img class="png" src="images/map_mb.png" alt="地図（モバイルJP）" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <!-- EN: venue（モバイル。※ENは静的map画像なし） -->
+  <section id="venueImageMbEn" class="fadeup only-mb-en">
+    <div class="block">
+      <img class="png" src="images/venue_en_mb.png" alt="Venue (mobile EN)" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <!-- PC: 静的 map 画像（JPのみ表示） -->
+  <section id="mapImagePcJp" class="fadeup only-pc-jp">
+    <div class="block">
+      <img class="png" src="images/map.png" alt="地図（PC JP）" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <!-- Google Map 埋め込み（共通） -->
+  <section id="access" class="fadeup">
+    <div class="map-embed">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.8289394692586!2d139.73018631525834!3d35.65858098019967!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188b8574b5c63d%3A0x2a76b9ec61f1debb!2z44CSMTA2LTAwNDIg5p2x5Lqs6YO95riv5Yy66KW_5Y2X5Lqs77yS5LiB55uu77yR77yX77yW!5e0!3m2!1sja!2sjp!4v1693123456789!5m2!1sja!2sjp"
+        width="100%" height="450" style="border:0;" allowfullscreen loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <p class="map-link"><a href="https://goo.gl/maps/SbEgLUBmTDZBhB1X8" target="_blank" rel="noopener">Google Mapを開く</a></p>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-access-allergy)"></div>
+
+  <!-- Allergy -->
+  <section id="allergy" class="fadeup">
+    <div class="block">
+      <img class="png i18n"
+           data-jp="images/allergy.png" data-jp-mb="images/allergy_mb.png"
+           data-en="images/allergy_en.png" data-en-mb="images/allergy_en_mb.png"
+           alt="Allergy / 食物アレルギー" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-allergy-barefoot)"></div>
+
+  <!-- Barefoot -->
+  <section id="barefoot" class="fadeup">
+    <div class="block">
+      <img class="png i18n"
+           data-jp="images/barefoot.png" data-jp-mb="images/barefoot_mb.png"
+           data-en="images/barefoot_en.png" data-en-mb="images/barefoot_en_mb.png"
+           alt="Barefoot" loading="lazy" decoding="async">
+    </div>
+  </section>
+
+  <div class="gap" style="--h: var(--gap-barefoot-rsvp)"></div>
+
+  <!-- RSVP -->
+  <section id="rsvp" class="rsvp fadeup">
+    <div class="block">
+      <img class="png i18n"
+           data-jp="images/rsvp.png" data-jp-mb="images/rsvp_mb.png"
+           data-en="images/rsvp_en.png" data-en-mb="images/rsvp_en_mb.png"
+           alt="RSVP / ご出欠確認" loading="lazy" decoding="async">
+    </div>
+
+    <div class="block">
+      <form class="rsvp-form" id="rsvpForm" novalidate>
+        <input type="hidden" name="_subject" value="Wedding RSVP from Website" />
+        <input type="text" name="_gotcha" style="display:none" aria-hidden="true" />
+
+        <div class="form-group attend-inline">
+          <label class="check">
+            <input type="radio" name="attendance" id="attendYes" value="出席" required>
+            <span class="i18n-text" data-jp="ご出席" data-en="Attending">ご出席</span>
+          </label>
+          <label class="check">
+            <input type="radio" name="attendance" id="attendNo" value="欠席" required>
+            <span class="i18n-text" data-jp="ご欠席" data-en="Not attending">ご欠席</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="name"><span class="i18n-text" data-jp="お名前" data-en="Name">お名前</span></label>
+          <input id="name" name="name" type="text" class="input" required>
+        </div>
+
+        <div class="form-group group-furigana">
+          <label class="label" for="nameKana"><span class="i18n-text" data-jp="おふりがな" data-en="Name (Kana)">おふりがな</span></label>
+          <input id="nameKana" name="nameKana" type="text" class="input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="label" id="allergyLabel"><span class="i18n-text" data-jp="アレルギーについて" data-en="Food Allergies">アレルギーについて</span></label>
+          <div class="boxed" role="group" aria-labelledby="allergyLabel">
+            <div class="checks">
+              <label class="check"><input type="checkbox" name="allergyList" value="えび"><span class="i18n-text" data-jp="えび" data-en="Shrimp">えび</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="かに"><span class="i18n-text" data-jp="かに" data-en="Crab">かに</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="くるみ"><span class="i18n-text" data-jp="くるみ" data-en="Walnut">くるみ</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="小麦"><span class="i18n-text" data-jp="小麦" data-en="Wheat">小麦</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="そば"><span class="i18n-text" data-jp="そば" data-en="Buckwheat">そば</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="卵"><span class="i18n-text" data-jp="卵" data-en="Eggs">卵</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="乳"><span class="i18n-text" data-jp="乳" data-en="Milk">乳</span></label>
+              <label class="check"><input type="checkbox" name="allergyList" value="落花生"><span class="i18n-text" data-jp="落花生" data-en="Peanuts">落花生</span></label>
+            </div>
+            <label for="allergyOther" class="label" style="margin-top:8px;"><span class="i18n-text" data-jp="その他・ご要望" data-en="Other / Requests">その他・ご要望</span></label>
+            <textarea id="allergyOther" name="allergyOther" class="textarea" placeholder="その他　特に気になる点がございましたら下記にご記入ください"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label" id="parkingLabel" for="parking"><span class="i18n-text" data-jp="駐車場" data-en="Parking">駐車場</span></label>
+          <div class="boxed" role="group" aria-labelledby="parkingLabel">
+            <label class="check" style="margin-top:2px;">
+              <input type="checkbox" id="parking" name="parking" value="希望する">
+              <span class="i18n-text" data-jp="駐車場が必要な場合はこちらにチェックください" data-en="If you need parking, please check here">駐車場が必要な場合はこちらにチェックください</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="messageBox"><span class="i18n-text" data-jp="メッセージ（ご質問など）" data-en="Message or Questions">メッセージ（ご質問など）</span></label>
+          <textarea id="messageBox" name="message" class="textarea" placeholder="私たちに聞きたい質問があればぜひ！"></textarea>
+        </div>
+
+        <div class="btns"><button type="submit" class="btn" id="submitBtn">送　信</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- THANK YOU -->
+  <div id="thanks" aria-hidden="true">
+    <div class="thanks-inner">
+      <div class="thanks-media">
+        <img class="thanks-img swap-mb" src="images/hero2.jpg" data-mb="images/hero2_mb.jpg" alt="Thank you">
+        <div class="thanks-words">
+          <img class="tline swap-mb" src="images/seeyousoon_tw_or.png" data-mb="images/seeyousoon_tw_mb.png" alt="很期待到時候與大家見面">
+          <img class="tline swap-mb" src="images/seeyousoon_jp_or.png" data-mb="images/seeyousoon_jp_mb.png" alt="ふたりで心待ちにしています">
+          <img class="tline swap-mb" src="images/seeyousoon_en_or.png" data-mb="images/seeyousoon_en_mb.png" alt="SEE YOU SOON">
+        </div>
+        <img class="lastname swap-mb" src="images/lastname.png" data-mb="images/lastname_mb.png" alt="Names">
+      </div>
+      <div class="thanks-panel" aria-hidden="true"></div>
+    </div>
+  </div>
+
+<script>
+/* ========= Language + responsive image switcher ========= */
+(() => {
+  const mq = window.matchMedia('(max-width: 720px)');
+  const $  = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  // ★ 初期言語は常に日本語。?lang=en または #en のときだけ英語に。
+  const urlLang  = new URLSearchParams(location.search).get('lang');
+  const hashLang = (location.hash || '').replace('#','').toLowerCase();
+  let currentLang = (urlLang === 'en' || hashLang === 'en') ? 'en' : 'ja';
+
+  function syncHtmlLang(){
+    document.documentElement.lang = (currentLang === 'en') ? 'en' : 'ja';
+  }
+
+  function applyLangButtons(){
+    const btnJP = $('#btnJP'), btnEN = $('#btnEN');
+    if(!btnJP || !btnEN) return;
+    btnJP.classList.toggle('on', currentLang==='ja');
+    btnEN.classList.toggle('on', currentLang==='en');
+    btnJP.setAttribute('aria-pressed', String(currentLang==='ja'));
+    btnEN.setAttribute('aria-pressed', String(currentLang==='en'));
+  }
+
+  function pickSrc(el){
+    const isMB = mq.matches;
+    if(el.classList.contains('i18n')){
+      const base = currentLang === 'en' ? 'en' : 'jp';
+      const key  = isMB ? (base + 'Mb') : base;
+      const fallback = isMB ? ( (el.dataset[base] ? base : 'jp') + 'Mb' ) : (el.dataset[base] ? base : 'jp');
+      return el.dataset[key] || el.dataset[fallback] || el.dataset.jp || el.dataset.en || el.getAttribute('src');
+    }else if(el.classList.contains('swap-mb')){
+      return isMB && el.dataset.mb ? el.dataset.mb : el.getAttribute('src');
+    }
+    return el.getAttribute('src');
+  }
+
+  function applyLang(){
+    syncHtmlLang();
+    applyLangButtons();
+
+    // ふりがな（ENの時は非表示＆非必須）
+    const kanaGroup = document.querySelector('.group-furigana');
+    const kanaInput = document.getElementById('nameKana');
+    if (kanaGroup) {
+      if (currentLang === 'en') {
+        kanaGroup.style.display = 'none';
+        if (kanaInput) kanaInput.required = false;
+      } else {
+        kanaGroup.style.display = '';
+        if (kanaInput) kanaInput.required = true;
+      }
+    }
+
+    // 画像切替
+    $$('.i18n, .swap-mb').forEach(img=>{
+      const next = pickSrc(img);
+      if(next && img.getAttribute('src') !== next){ img.setAttribute('src', next); }
+      const altJP = img.dataset.altJp, altEN = img.dataset.altEn;
+      if(altJP || altEN){ img.alt = (currentLang==='en' ? (altEN || img.alt) : (altJP || img.alt)); }
+    });
+
+    // テキスト切替
+    $$('.i18n-text').forEach(el=>{
+      const jp = el.dataset.jp, en = el.dataset.en;
+      if(jp || en){ el.textContent = (currentLang==='en' ? (en || jp || '') : (jp || en || '')); }
+    });
+
+    // プレースホルダ
+    const ao  = document.getElementById('allergyOther');
+    if(ao){ ao.placeholder = currentLang==='en'
+      ? 'If you have other requests, please let us know.'
+      : 'その他　特に気になる点がございましたら下記にご記入ください'; }
+    const msg = document.getElementById('messageBox');
+    if (msg) { msg.placeholder = (currentLang === 'en') ? 'for Peng and Miwa... :)' : '私たちに聞きたい質問があればぜひ！'; }
+
+    // Mapリンク文言
+    const mapLink = document.querySelector('.map-link a');
+    if(mapLink){ mapLink.textContent = currentLang==='en' ? 'Open Google Maps' : 'Google Mapを開く'; }
+
+    // 送信ボタン
+    const submitBtn = $('#submitBtn');
+    if(submitBtn){ submitBtn.textContent = currentLang==='en' ? 'Send' : '送　信'; }
+  }
+
+  function setLang(lang){
+    currentLang = (lang==='en' ? 'en' : 'ja');
+    applyLang();
+    // URLクエリを更新して共有しやすく
+    const params = new URLSearchParams(location.search);
+    if (currentLang === 'en') params.set('lang','en'); else params.delete('lang');
+    const newUrl = location.pathname + (params.toString()?('?'+params.toString()):'');
+    history.replaceState(null,'', newUrl + (currentLang==='en' ? '' : ''));
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    applyLang();
+    $('#btnJP')?.addEventListener('click', ()=> setLang('ja'));
+    $('#btnEN')?.addEventListener('click', ()=> setLang('en'));
+    mq.addEventListener?.('change', applyLang);
+  });
+})();
+
+/* ========= Intro → HERO / WORDS ========= */
+(function(){
+  const intro  = document.getElementById('intro');
+  const hero   = document.getElementById('hero');
+  const wordsW = document.getElementById('wordsWrap');
+
+  function sec(v){
+    const s = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    return parseFloat(s || '0');
+  }
+  const tLogoIn   = sec('--logo-in'),
+        tLogoHold = sec('--logo-hold'),
+        tLogoOut  = sec('--logo-out');
+  const totalLogo = (tLogoIn + tLogoHold + tLogoOut) * 1000;
+
+  window.addEventListener('load', () => {
+    setTimeout(()=>{
+      intro.classList.add('hidden');
+      intro.addEventListener('transitionend', ()=>{ intro.style.display='none'; }, {once:true});
+      hero.classList.add('show');
+      setTimeout(()=>{ wordsW.classList.add('show'); }, 120);
+    }, totalLogo - tLogoOut*1000 + 100);
+  });
+})();
+
+/* ========= Words parallax ========= */
+(function(){
+  const hero = document.getElementById('hero');
+  const heroImg = document.getElementById('heroImg');
+  const wordsInner = document.getElementById('wordsInner');
+  function getHeroHeight(){ return Math.max(hero.offsetHeight, heroImg.clientHeight||0, window.innerHeight*0.6, 1); }
+  function update(){
+    const h=getHeroHeight(), y=window.scrollY, top=hero.offsetTop;
+    const progress = Math.min(Math.max((y-top)/h,0),1);
+    const ratio = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--words-shift')) || .22;
+    wordsInner.style.setProperty('--words-ty', (h * ratio * progress) + 'px');
+  }
+  window.addEventListener('scroll', ()=>requestAnimationFrame(update), { passive:true });
+  window.addEventListener('resize', update);
+  if (heroImg.complete) update(); else heroImg.addEventListener('load', update, { once:true });
+})();
+
+/* ========= Fadeup ========= */
+(function(){
+  const targets = document.querySelectorAll('.fadeup');
+  const observer = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){ entry.target.classList.add('show'); obs.unobserve(entry.target); }
+    });
+  }, { threshold: 0.2 });
+  targets.forEach(el=> observer.observe(el));
+})();
+
+/* ========= Form submit (Formspree) ========= */
+(function(){
+  const form = document.getElementById('rsvpForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const thanks = document.getElementById('thanks');
+  const FORM_ENDPOINT = 'https://formspree.io/f/xblaordo';
+  if(!form) return;
+
+  const lang = () => (document.documentElement.lang || 'ja');
+  const MSG = {
+    ja: { pickAttendance:'ご出欠 を選択してください。', enterNameKana:'お名前・おふりがな を入力してください。', sending:'送信中…', submit:'送　信', sendError:'送信できませんでした。通信環境をご確認のうえ、時間をおいて再度お試しください。' },
+    en: { pickAttendance:'Please choose attendance.', enterNameKana:'Please enter your name and kana.', sending:'Sending…', submit:'Send', sendError:'Failed to send. Please check your connection and try again later.' }
+  };
+
+  function getAllergies(){
+    const arr = Array.from(document.querySelectorAll('input[name="allergyList"]:checked')).map(el=>el.value);
+    return arr.length ? arr.join('、') : 'なし';
+  }
+  function getAttendance(){
+    const el = form.querySelector('input[name="attendance"]:checked');
+    return el ? el.value : '';
+  }
+  function lock(){ if(submitBtn){ submitBtn.disabled = true; submitBtn.dataset.text = submitBtn.textContent; submitBtn.textContent = MSG[lang()].sending; } }
+  function unlock(){ if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.text || MSG[lang()].submit; } }
+
+  function openThanks(){
+    if(!thanks) return;
+    // モバイルなら THANK YOU 配下の swap-mb を確実にモバイル画像へ
+    if (window.matchMedia('(max-width: 720px)').matches) {
+      document.querySelectorAll('#thanks .swap-mb').forEach(img=>{
+        if (img.dataset.mb) img.src = img.dataset.mb;
+      });
+    }
+    // 表示＆スクロール固定
+    thanks.classList.add('show');
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const close = () => {
+      thanks.classList.remove('show');
+      document.body.style.overflow = prevOverflow || '';
+    };
+    // クリックまたは ESC で閉じる
+    thanks.addEventListener('click', close, { once:true });
+    const esc = (e)=>{ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc);} };
+    document.addEventListener('keydown', esc);
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (form.querySelector('input[name="_gotcha"]').value){ return; }
+
+    const attendance = getAttendance();
+    if (!attendance){ alert(MSG[lang()].pickAttendance); return; }
+
+    const name = (form.name?.value || '').trim();
+    const nameKana = (form.nameKana?.value || '').trim();
+    if (!name || (document.documentElement.lang!=='en' && !nameKana)){
+      alert(MSG[lang()].enterNameKana); return;
+    }
+
+    const parkingVal = (form.parking?.checked && attendance === '出席') ? '希望する' : '不要';
+
+    const fd = new FormData();
+    fd.append('ご出欠',       attendance || '未選択');
+    fd.append('お名前',       name);
+    fd.append('おふりがな',   nameKana || '（EN）');
+    fd.append('アレルギー',   getAllergies());
+    fd.append('その他',       (form.allergyOther?.value || '').trim() || 'なし');
+    fd.append('駐車場',       parkingVal);
+    fd.append('メッセージ',   (form.message?.value || '').trim() || '（未入力）');
+    fd.append('_subject',     form.querySelector('input[name="_subject"]').value || 'Wedding RSVP from Website');
+
+    lock();
+    try{
+      const controller = new AbortController();
+      const timer = setTimeout(()=>controller.abort('timeout'), 15000);
+      const res = await fetch(FORM_ENDPOINT, { method:'POST', body:fd, headers:{ 'Accept':'application/json' }, signal:controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('送信に失敗しました');
+      openThanks();
+      form.reset();
+    }catch(err){
+      console.error(err);
+      alert(MSG[lang()].sendError);
+    }finally{
+      unlock();
+    }
+  });
+})();
+
+/* === Lang toggle：words表示後に出現。モバイルはheroが見えてる間だけ === */
+(function(){
+  const wordsWrap  = document.getElementById('wordsWrap');
+  const langToggle = document.getElementById('langToggle');
+  const hero       = document.getElementById('hero');
+  if (!wordsWrap || !langToggle || !hero) return;
+
+  const mqMb = window.matchMedia('(max-width: 720px)');
+  const DELAY_MS = 500;
+  let revealed = false;
+  let heroInView = true;
+
+  const io = new IntersectionObserver((entries)=>{
+    heroInView = !!entries[0]?.isIntersecting;
+    applyVisibility();
+  }, { threshold: 0.1 });
+  io.observe(hero);
+
+  function applyVisibility(){
+    if (!revealed){ langToggle.classList.remove('show'); return; }
+    if (mqMb.matches){
+      if (heroInView) langToggle.classList.add('show');
+      else            langToggle.classList.remove('show');
+    }else{
+      langToggle.classList.add('show');
+    }
+  }
+
+  function revealOnce(){
+    if (revealed) return;
+    setTimeout(()=>{ revealed = true; applyVisibility(); }, DELAY_MS);
+  }
+
+  if (wordsWrap.classList.contains('show')) revealOnce();
+  const mo = new MutationObserver(()=>{
+    if (wordsWrap.classList.contains('show')){ revealOnce(); mo.disconnect(); }
+  });
+  mo.observe(wordsWrap, { attributes:true, attributeFilter:['class'] });
+
+  mqMb.addEventListener?.('change', applyVisibility);
+})();
+</script>
+</body>
+</html>
